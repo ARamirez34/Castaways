@@ -1,0 +1,816 @@
+<!--
+    Castaways Ice Cream Shop - Admin Analytics Dashboard  
+    ===================================================
+    
+    Comprehensive admin dashboard displaying:
+    - Real-time sales analytics and charts
+    - Inventory levels by category
+    - Monthly sales performance tracking
+    - Top selling items visualization
+    - Ice cream availability distribution
+    
+    Requires admin authentication to access.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- ============================== -->
+    <!-- ADMIN DASHBOARD METADATA       -->
+    <!-- ============================== -->
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Castaways Ice Cream Shop - Admin Charts">
+    <meta name="author" content="Castaways">
+
+    <title>🍦 CASTAWAYS - Admin Charts</title>
+
+    <!-- ============================== -->
+    <!-- ADMIN DASHBOARD STYLESHEETS    -->
+    <!-- ============================== -->
+    <!-- FontAwesome icons for UI elements -->
+    <link href="{{ url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    
+    <!-- Google Fonts for professional typography -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- SB Admin 2 theme (includes Bootstrap) -->
+    <link href="{{ url_for('static', filename='css/sb-admin-2.min.css') }}" rel="stylesheet">
+
+</head>
+
+<body id="page-top" style="height: 100vh;">
+
+    <!-- ============================================= -->
+    <!-- ADMIN DASHBOARD LAYOUT                    -->
+    <!-- ============================================= -->
+    <div id="wrapper" style="min-height: 100vh; display: flex;">
+
+        <!-- ======================== -->
+        <!-- ADMIN NAVIGATION SIDEBAR -->
+        <!-- ======================== -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar" style="min-height: 100vh;">
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('views.home') }}">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-laugh-wink"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">CASTAWAYS ADMIN</div>
+            </a>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('views.home') }}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Home</span></a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Nav Item - Charts -->
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for('views.charts') }}">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Charts</span></a>
+            </li>
+
+            <!-- Nav Item - Tables -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('views.tables') }}">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>Tables</span></a>
+            </li>
+
+            <!-- Nav Item - Feedback -->
+            <li class="nav-item">
+                <a class="nav-link" href="/all_feedback">
+                    <i class="fas fa-fw fa-comments"></i>
+                    <span>Feedback</span></a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column" style="min-height: 100vh;">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                                <img class="img-profile rounded-circle"
+                                    src="{{ url_for('static', filename='assets/img/avataaars.png') }}">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{{ url_for('views.logout') }}">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <h1 class="h3 mb-2 text-gray-800">Sales Analytics</h1>
+                            <p class="mb-0">Track sales performance across all product categories. Data automatically resets each month.</p>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="monthDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-calendar-alt"></i> <span id="selectedMonth">{{ charts_data.current_month_display }}</span>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="monthDropdown">
+                                <a class="dropdown-item active" href="#" data-month="current">
+                                    <i class="fas fa-calendar-day"></i> Current Month ({{ charts_data.current_month_display }})
+                                </a>
+                                <a class="dropdown-item" href="#" data-month="historical">
+                                    <i class="fas fa-history"></i> Previous Month (September 2025)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Summary Cards Row -->
+                    <div class="row">
+                        
+                        <!-- Total Sales Card -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total Sales</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                {{ charts_data.categories.AddOns + charts_data.categories.Supplies + charts_data.categories.IceCreamInventory }} units
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AddOns Sales Card -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                AddOns Sales</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ charts_data.categories.AddOns }} units</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-plus fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Supplies Sales Card -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Supplies Sales</div>
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col-auto">
+                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ charts_data.categories.Supplies }} units</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-box fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ice Cream Sales Card -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Ice Cream Sales</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ charts_data.categories.IceCreamInventory }} units</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-ice-cream fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Content Row -->
+                    <div class="row">
+
+                        <div class="col-xl-8 col-lg-7">
+
+                            <!-- Individual Category Charts with Tabs -->
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Detailed Sales by Category - {{ charts_data.current_month_display }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Tab Navigation -->
+                                    <ul class="nav nav-tabs" id="categoryTabs" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="icecream-tab" data-toggle="tab" href="#icecream" role="tab" aria-controls="icecream" aria-selected="true">
+                                                <i class="fas fa-ice-cream"></i> Ice Cream
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="supplies-tab" data-toggle="tab" href="#supplies" role="tab" aria-controls="supplies" aria-selected="false">
+                                                <i class="fas fa-box"></i> Supplies
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="addons-tab" data-toggle="tab" href="#addons" role="tab" aria-controls="addons" aria-selected="false">
+                                                <i class="fas fa-plus-circle"></i> AddOns
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Tab Content -->
+                                    <div class="tab-content mt-3" id="categoryTabContent">
+                                        <!-- Ice Cream Tab -->
+                                        <div class="tab-pane fade show active" id="icecream" role="tabpanel" aria-labelledby="icecream-tab">
+                                            <div class="chart-area">
+                                                <canvas id="icecreamChart"></canvas>
+                                            </div>
+                                            <hr>
+                                            <div class="small text-muted">
+                                                <i class="fas fa-info-circle"></i>
+                                                Ice cream flavors and their individual sales performance.
+                                            </div>
+                                        </div>
+
+                                        <!-- Supplies Tab -->
+                                        <div class="tab-pane fade" id="supplies" role="tabpanel" aria-labelledby="supplies-tab">
+                                            <div class="chart-area">
+                                                <canvas id="suppliesChart"></canvas>
+                                            </div>
+                                            <hr>
+                                            <div class="small text-muted">
+                                                <i class="fas fa-info-circle"></i>
+                                                Supply items breakdown with sales data.
+                                            </div>
+                                        </div>
+
+                                        <!-- AddOns Tab -->
+                                        <div class="tab-pane fade" id="addons" role="tabpanel" aria-labelledby="addons-tab">
+                                            <div class="chart-area">
+                                                <canvas id="addonsChart"></canvas>
+                                            </div>
+                                            <hr>
+                                            <div class="small text-muted">
+                                                <i class="fas fa-info-circle"></i>
+                                                Individual AddOn items and their sales performance.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Inventory Distribution Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Inventory Distribution</h6>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4">
+                                        <canvas id="categoryPieChart"></canvas>
+                                    </div>
+                                    <hr>
+                                    Current stock levels by product category.
+                                </div>
+                            </div>
+
+                            <!-- Ice Cream Availability Count -->
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Flavors by Stock Level</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4">
+                                        <canvas id="availabilityChart"></canvas>
+                                    </div>
+                                    <hr>
+                                    Number of ice cream flavors at each stock level.
+                                </div>
+                            </div>
+                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End of Charts Content -->
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; CASTAWAYS 2025</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{{ url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
+
+    <!-- Page level plugins -->
+    <script src="{{ url_for('static', filename='vendor/chart.js/Chart.min.js') }}"></script>
+
+    <!-- Custom Sales Analytics Scripts -->
+    <script>
+        // Sales data from backend
+        const chartsData = {{ charts_data | tojson }};
+        
+        // Set new default font family and font color to mimic Bootstrap's default styling
+        Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+        Chart.defaults.global.defaultFontColor = '#858796';
+
+        // 1. Individual Category Charts (Bar Charts for each tab)
+        
+        // AddOns Chart
+        var ctx1 = document.getElementById("addonsChart");
+        var addonsChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: chartsData.individual_data.addons.map(item => item.name),
+                datasets: [{
+                    label: "Units Sold",
+                    backgroundColor: "#4e73df",
+                    hoverBackgroundColor: "#2e59d9",
+                    borderColor: "#4e73df",
+                    data: chartsData.individual_data.addons.map(item => item.sold),
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 6
+                        },
+                        maxBarThickness: 50,
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value, index, values) {
+                                return value + ' units';
+                            }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            return tooltipItem.value + ' units sold';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Supplies Chart
+        var ctx2 = document.getElementById("suppliesChart");
+        var suppliesChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: chartsData.individual_data.supplies.map(item => item.name),
+                datasets: [{
+                    label: "Units Sold",
+                    backgroundColor: "#1cc88a",
+                    hoverBackgroundColor: "#17a673",
+                    borderColor: "#1cc88a",
+                    data: chartsData.individual_data.supplies.map(item => item.sold),
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 6
+                        },
+                        maxBarThickness: 50,
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value, index, values) {
+                                return value + ' units';
+                            }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            return tooltipItem.value + ' units sold';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Ice Cream Chart
+        var ctx3 = document.getElementById("icecreamChart");
+        var icecreamChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: chartsData.individual_data.icecream.map(item => item.name),
+                datasets: [{
+                    label: "Units Sold",
+                    backgroundColor: "#36b9cc",
+                    hoverBackgroundColor: "#2c9faf",
+                    borderColor: "#36b9cc",
+                    data: chartsData.individual_data.icecream.map(item => item.sold),
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 6
+                        },
+                        maxBarThickness: 50,
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value, index, values) {
+                                return value + ' units';
+                            }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            return tooltipItem.value + ' units sold';
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Category Distribution Pie Chart
+        var ctx3 = document.getElementById("categoryPieChart");
+        var categoryPieChart = new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(chartsData.categories),
+                datasets: [{
+                    data: Object.values(chartsData.categories),
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                },
+                legend: {
+                    display: false
+                },
+                cutoutPercentage: 80,
+            },
+        });
+
+        // 4. Ice Cream Availability Chart
+        var ctx4 = document.getElementById("availabilityChart");
+        var availabilityChart = new Chart(ctx4, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(chartsData.availability_sales),
+                datasets: [{
+                    data: Object.values(chartsData.availability_sales),
+                    backgroundColor: ['#6c757d', '#28a745', '#fd7e14', '#dc3545'],
+                    hoverBackgroundColor: ['#5a6268', '#218838', '#e8650e', '#c82333'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            const value = chart.datasets[0].data[tooltipItem.index];
+                            const label = chart.labels[tooltipItem.index];
+                            return label + ': ' + value + (value === 1 ? ' flavor' : ' flavors');
+                        }
+                    }
+                },
+                legend: {
+                    display: false
+                },
+                cutoutPercentage: 80,
+            },
+        });
+
+        // Month Selection Functionality
+        let currentData = chartsData; // Current month data from backend
+        let historicalData = null;    // Historical month data (loaded on demand)
+        let currentMonth = 'current'; // Track which month is selected
+
+        // Function to load historical data
+        function loadHistoricalData() {
+            if (historicalData) {
+                return Promise.resolve(historicalData); // Already loaded
+            }
+            
+            return fetch('/api/historical_chart_data')
+                .then(response => response.json())
+                .then(data => {
+                    historicalData = data;
+                    return data;
+                });
+        }
+
+        // Function to update all data displays
+        function updateDisplayData(data, monthType) {
+            // Update summary cards
+            const totalSales = data.categories.AddOns + data.categories.Supplies + data.categories.IceCreamInventory;
+            
+            // Update card values
+            document.querySelector('.card.border-left-primary .h5').textContent = totalSales + ' units';
+            document.querySelector('.card.border-left-success .h5').textContent = data.categories.AddOns + ' units';
+            document.querySelector('.card.border-left-info .h5').textContent = data.categories.Supplies + ' units';
+            document.querySelector('.card.border-left-warning .h5').textContent = data.categories.IceCreamInventory + ' units';
+            
+            // Update chart header
+            const monthDisplay = monthType === 'current' ? '{{ charts_data.current_month_display }}' : 'September 2025';
+            document.querySelector('.card-header h6').textContent = `Detailed Sales by Category - ${monthDisplay}`;
+            
+            // Update all charts with new data
+            updateChartData(addonsChart, data.individual_data.addons);
+            updateChartData(suppliesChart, data.individual_data.supplies);
+            updateChartData(icecreamChart, data.individual_data.icecream);
+        }
+
+        // Function to update a chart's data
+        function updateChartData(chart, newData) {
+            chart.data.labels = newData.map(item => item.name);
+            chart.data.datasets[0].data = newData.map(item => item.sold);
+            chart.update();
+        }
+
+        // Dropdown event handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.getElementById('monthDropdown');
+            const dropdownItems = document.querySelectorAll('#monthDropdown + .dropdown-menu .dropdown-item');
+            const selectedMonth = document.getElementById('selectedMonth');
+            
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const monthType = this.getAttribute('data-month');
+                    const monthText = this.textContent.trim();
+                    
+                    // Update dropdown button text
+                    selectedMonth.textContent = monthText.replace(/.*\(([^)]+)\).*/, '$1');
+                    
+                    // Update dropdown active state
+                    dropdownItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Switch data based on selection
+                    if (monthType === 'current') {
+                        updateDisplayData(currentData, 'current');
+                        currentMonth = 'current';
+                    } else if (monthType === 'historical') {
+                        // Show loading state
+                        selectedMonth.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        
+                        loadHistoricalData()
+                            .then(data => {
+                                updateDisplayData(data, 'historical');
+                                selectedMonth.textContent = 'September 2025';
+                                currentMonth = 'historical';
+                            })
+                            .catch(error => {
+                                console.error('Error loading historical data:', error);
+                                selectedMonth.textContent = 'Error Loading';
+                                // Revert to current data
+                                updateDisplayData(currentData, 'current');
+                                currentMonth = 'current';
+                            });
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

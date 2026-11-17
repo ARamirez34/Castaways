@@ -1,0 +1,584 @@
+<!--
+    Castaways Ice Cream Shop - Customer Homepage
+    ============================================
+    
+    Main customer-facing page displaying:
+    - Ice cream flavors with real-time availability
+    - Trending flavors based on daily sales
+    - About section with shop information
+    - Contact form for customer feedback
+    
+    Features responsive design and live availability updates.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- ============================== -->
+        <!-- PAGE METADATA AND SEO          -->
+        <!-- ============================== -->
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="Castaways Ice Cream Shop - Fresh homemade ice cream flavors" />
+        <meta name="author" content="Castaways" />
+        <title>🍦 CASTAWAYS</title>
+        
+        <!-- ============================== -->
+        <!-- FAVICON AND EXTERNAL RESOURCES -->
+        <!-- ============================== -->
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/favicon.ico') }}">
+        
+        <!-- Font Awesome icons for UI elements -->
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        
+        <!-- Google Fonts for typography -->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        
+        <!-- Main stylesheet (includes Bootstrap) -->
+        <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+        <!-- ============================== -->
+        <!-- CUSTOM ICE CREAM STYLING       -->
+        <!-- ============================== -->
+        <style>
+            .ice-cream-icon {
+                color: #4A90E2 !important; /* Ocean blue color for ice cream icons */
+                text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            }
+            
+            .ice-cream-icon:hover {
+                color: #357ABD !important; /* Darker blue on hover */
+                transform: scale(1.05);
+                transition: all 0.2s ease;
+            }
+        </style>
+
+    </head>
+    
+    <body id="page-top">
+        <!-- ============================================= -->
+        <!-- MAIN NAVIGATION BAR                          -->
+        <!-- ============================================= -->
+        <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand" href="#page-top">Castaways</a>
+                <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#portfolio">Home</a></li>
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#about">About</a></li>
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="{{ url_for('views.login') }}" id="admin-nav-link">Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- ============================================= -->
+        <!-- HERO SECTION / MASTHEAD                      -->
+        <!-- ============================================= -->
+        <header class="masthead bg-primary text-white text-center">
+            <div class="container d-flex align-items-center flex-column">
+                <!-- Masthead Avatar Image-->
+                <img class="masthead-avatar mb-5" src="{{ url_for('static', filename='assets/img/avataaars.png') }}" alt="...">
+                <!-- Masthead Heading-->
+                <h1 class="masthead-heading text-uppercase mb-0" style="font-family: 'Comic Sans MS', cursive, sans-serif;">Castaways</h1>
+                <!-- Icon Divider-->
+                <div class="divider-custom divider-light">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                <!-- Masthead Subheading-->
+                <p class="masthead-subheading font-weight-light mb-0">Ice Cream Shop - Moiliili</p>
+            </div>
+        </header>
+        
+        <!-- ============================================= -->
+        <!-- ICE CREAM AVAILABILITY SECTION               -->
+        <!-- ============================================= -->
+        <section class="page-section portfolio" id="portfolio">
+            <div class="container">
+                <!-- Section Heading-->
+                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">What's Available Today</h2>
+                <!-- Icon Divider-->
+                <div class="divider-custom">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-ice-cream"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                
+                <!-- Live Update Notice -->
+                <div class="text-center mb-4">
+                    <p class="lead">
+                        <i class="fas fa-sync-alt text-primary"></i> 
+                        Live availability updates • {{ available_count }} flavors available today
+                    </p>
+                </div>
+
+                <!-- ======================= -->
+                <!-- TRENDING FLAVORS DISPLAY -->
+                <!-- ======================= -->
+                {% if trending_flavors %}
+                <div class="mb-5">
+                    <h4 class="text-center text-secondary mb-4">
+                        <i class="fas fa-fire text-warning"></i> Trending Today
+                    </h4>
+                    <div class="row justify-content-center" id="trending-flavors">
+                        {% for flavor in trending_flavors %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm border-0">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-fire fa-3x text-warning"></i>
+                                    </div>
+                                    <h5 class="card-title font-weight-bold">{{ flavor.name }}</h5>
+                                    <div class="mb-2">
+                                        <span class="badge badge-{{ flavor.badge_class }} px-3 py-2">{{ flavor.status_text }}</span>
+                                    </div>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-chart-line"></i> {{ flavor.sold_today }} sold today
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ======================= -->
+                <!-- FULL MENU DISPLAY       -->
+                <!-- ======================= -->
+                <div class="text-center mb-4">
+                    <h4 class="text-secondary">
+                        <i class="fas fa-list"></i> Full Menu
+                    </h4>
+                    <p class="text-muted">Click to see all available flavors with real-time status</p>
+                    <button class="btn btn-primary btn-lg" onclick="loadAllFlavors()">
+                        <i class="fas fa-eye"></i> View All Flavors
+                    </button>
+                </div>
+
+                <!-- All Flavors Grid (Initially Hidden) -->
+                <div id="all-flavors-container" class="row justify-content-center" style="display: none;">
+                    <!-- Will be populated via JavaScript -->
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loading-indicator" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading fresh availability data...</p>
+                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- About Section-->
+        <section class="page-section bg-primary text-white mb-0" id="about">
+            <div class="container">
+                <!-- About Section Heading-->
+                <h2 class="page-section-heading text-center text-uppercase text-white">About</h2>
+                <!-- Icon Divider-->
+                <div class="divider-custom divider-light">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                <!-- About Section Content-->
+                <div class="row">
+                    <div class="col-lg-4 ms-auto"><p class="lead">At Castaways, we believe every scoop should feel like an escape. That’s why we handcraft our ice cream in small batches, using only the freshest ingredients and a whole lot of love.</p></div>
+                    <div class="col-lg-4 me-auto"><p class="lead">From rich classics to unique seasonal flavors, every bite is made to delight. And of course, we serve it all in our homemade waffle cones — warm, golden, and baked fresh daily.</p></div>
+                </div>
+                <!-- About Section Button-->
+                <div class="text-center mt-4">
+                    
+                </div>
+            </div>
+        </section>
+        <!-- Contact Section-->
+        <section class="page-section" id="contact">
+            <div class="container">
+                <!-- Contact Section Heading-->
+                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Feedback!</h2>
+                <!-- Icon Divider-->
+                <div class="divider-custom">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                <!-- Contact Section Form-->
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 col-xl-7">
+                        <!-- Feedback Form -->
+                        <form action="{{ url_for('views.submit_feedback') }}" method="POST" id="contactForm">
+                            <!-- Name input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" name="name" id="name" type="text" placeholder="Enter your name..." required />
+                                <label for="name">Full name</label>
+                            </div>
+                            <!-- Email address input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" name="email" id="email" type="email" placeholder="name@example.com" required />
+                                <label for="email">Email address</label>
+                            </div>
+                            <!-- Message input-->
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" name="message" id="message" placeholder="Enter your message here..." style="height: 10rem" required></textarea>
+                                <label for="message">Message</label>
+                            </div>
+                            <!-- Submit Button-->
+                            <button class="btn btn-primary btn-xl" id="submitButton" type="submit">Send</button>
+                        </form>
+                        
+                        <!-- Success/Error Messages -->
+                        {% if request.args.get('success') %}
+                            <div class="alert alert-success mt-3" role="alert">
+                                <div class="text-center">
+                                    <div class="fw-bolder">Thank you for your feedback!</div>
+                                    Your message has been successfully submitted.
+                                </div>
+                            </div>
+                        {% elif request.args.get('error') %}
+                            <div class="alert alert-danger mt-3" role="alert">
+                                <div class="text-center">
+                                    <div class="fw-bolder">Oops! Something went wrong.</div>
+                                    Please try again later.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Footer-->
+        <footer class="footer text-center">
+            <div class="container">
+                <div class="row">
+                    <!-- Footer Location-->
+                    <div class="col-lg-4 mb-5 mb-lg-0">
+                        <h4 class="text-uppercase mb-4">Location</h4>
+                        <p class="lead mb-0">
+                            2346 S King St
+                            <br />
+                            Honolulu, HI 96826
+                        </p>
+                    </div>
+                    <!-- Footer Social Icons-->
+                    <div class="col-lg-4 mb-5 mb-lg-0">
+                        <h4 class="text-uppercase mb-4">Follow Us!</h4>
+                        <a class="btn btn-outline-light btn-social mx-1" href="https://www.instagram.com/castawaysicecream/" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-fw fa-instagram"></i>
+                        </a>
+                    </div>
+                    <!-- Footer About Text-->
+                    <div class="col-lg-4">
+                        <h4 class="text-uppercase mb-4">About Freelancer</h4>
+                        <p class="lead mb-0">
+                            Freelance is a free to use, MIT licensed Bootstrap theme created by
+                            <a href="http://startbootstrap.com">Start Bootstrap</a>
+                            .
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Copyright Section-->
+        <div class="copyright py-4 text-center text-white">
+            <div class="container"><small>Copyright &copy; CASTAWAYS 2025</small></div>
+        </div>
+        <!-- Ice Cream Availability JavaScript -->
+        <script>
+        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Log Cabin</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="assets/img/portfolio/cabin.png" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio Modal 2-->
+        <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" aria-labelledby="portfolioModal2" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Tasty Cake</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="assets/img/portfolio/cake.png" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio Modal 3-->
+        <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" aria-labelledby="portfolioModal3" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Circus Tent</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="assets/img/portfolio/circus.png" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio Modal 4-->
+        <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" aria-labelledby="portfolioModal4" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Controller</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="assets/img/portfolio/game.png" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio Modal 5-->
+        <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" aria-labelledby="portfolioModal5" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Locked Safe</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="assets/img/portfolio/safe.png" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio Modal 6-->
+        <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" aria-labelledby="portfolioModal6" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Submarine</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="assets/img/portfolio/submarine.png" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+        <!-- ============================== -->
+        <!-- REMOVED: SB Forms JS          -->
+        <!-- ============================== -->
+        <!-- Removed Start Bootstrap forms script that was interfering with our custom form submission -->
+        <!-- Our feedback form uses Flask backend instead of Start Bootstrap's contact form service -->
+        
+        <!-- ============================== -->
+        <!-- FEEDBACK FORM HANDLING         -->
+        <!-- ============================== -->
+        <script>
+            // Handle feedback form submission with user feedback
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                const submitButton = document.getElementById('submitButton');
+                const originalText = submitButton.innerHTML;
+                
+                // Show loading state
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                
+                // Re-enable after a delay (form will redirect anyway)
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }, 3000);
+            });
+        </script>
+        
+        <!-- ============================== -->
+        <!-- ICE CREAM AVAILABILITY JS      -->
+        <!-- ============================== -->
+        <script>
+            function loadAllFlavors() {
+                const container = document.getElementById('all-flavors-container');
+                const loading = document.getElementById('loading-indicator');
+                const button = event.target;
+                
+                if (container.style.display === 'flex') {
+                    container.style.display = 'none';
+                    button.innerHTML = '<i class="fas fa-eye"></i> View All Flavors';
+                    return;
+                }
+                
+                loading.style.display = 'block';
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                fetch('/api/ice_cream_availability')
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
+                        data.all_flavors.forEach(flavor => {
+                            const iconClass = 'fas fa-ice-cream ice-cream-icon'; // Blue ice cream icons
+                            const trendingBadge = flavor.is_trending ? 
+                                '<span class="badge badge-warning badge-sm mb-2"><i class="fas fa-fire"></i> Trending</span>' : '';
+                            
+                            html += `
+                                <div class="col-md-6 col-lg-3 mb-4">
+                                    <div class="card h-100 shadow-sm border-0">
+                                        <div class="card-body text-center p-3">
+                                            <div class="mb-2">
+                                                <i class="${iconClass} fa-2x"></i>
+                                            </div>
+                                            <h6 class="card-title font-weight-bold mb-2">${flavor.name}</h6>
+                                            ${trendingBadge}
+                                            <div class="mb-2">
+                                                <span class="badge badge-${flavor.badge_class} px-2 py-1">${flavor.status_text}</span>
+                                            </div>
+                                            <div class="text-muted small">
+                                                ${flavor.availability}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        container.innerHTML = html;
+                        container.style.display = 'flex';
+                        loading.style.display = 'none';
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-eye-slash"></i> Hide All Flavors';
+                        
+                    })
+                    .catch(error => {
+                        console.error('Error loading flavors:', error);
+                        loading.style.display = 'none';
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error Loading';
+                    });
+            }
+        </script>
+    </body>
+</html>
